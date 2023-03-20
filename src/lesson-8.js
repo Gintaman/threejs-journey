@@ -1,16 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-const canvas = document.querySelector(".webgl");
-
 // cusor
 const cursor = {
     x: 0,
     y: 0,
 };
-
 window.addEventListener("mousemove", (e) => {
+    // values go between 0 and 1 (when cursor is inside the canvas)
+    // but we want the value to go from negative to positive (-0.5 to 0.5),
+    // so subtract 0.5
     cursor.x = e.clientX / sizes.width - 0.5;
+    // invert since positive goes upward in Threejs
     cursor.y = -(e.clientY / sizes.height - 0.5);
 });
 
@@ -23,36 +24,9 @@ scene.add(mesh);
 
 // y axis goes upward, x axis goes to the right, z axis goes towards us
 const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: 800,
+    height: 600,
 };
-window.addEventListener("resize", () => {
-    // update sizes object to new width / height
-    sizes.width = window.innerWidth;
-    sizes.height = window.innerHeight;
-
-    // update the camera aspect as well
-    camera.aspect = sizes.width / sizes.height;
-
-    // tell 3js to update projection matrix
-    camera.updateProjectionMatrix();
-
-    // update renderer
-    renderer.setSize(sizes.width, sizes.height);
-    // update pixel ratio, for cases where users drag our app to another monitor
-    // with different pixel ratio
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
-
-// go fullscreen when user double clicks our app
-window.addEventListener("dblclick", () => {
-    // does not work on safari ofc
-    if (!document.fullscreenElement) {
-        canvas.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-});
 
 // first parameter is the vertical FoV (45 - 75 usually good)
 const camera = new THREE.PerspectiveCamera(
@@ -62,27 +36,56 @@ const camera = new THREE.PerspectiveCamera(
     100
 );
 
+/*
+const aspectRatio = sizes.width / sizes.height;
+const camera = new THREE.OrthographicCamera(
+    -1 * aspectRatio,
+    1 * aspectRatio,
+    1,
+    -1,
+    0.1,
+    100
+);
+*/
+
+// camera.position.x = 2;
+// camera.position.y = 2;
 camera.position.z = 3;
 camera.lookAt(mesh.position);
 scene.add(camera);
 
-const controls = new OrbitControls(camera, canvas);
+const controls = new OrbitControls(camera, document.querySelector(".webgl"));
 controls.enableDamping = true;
+
+// requestAnimationFrame's purpose is to call a function on the browser's next render frame
 
 // Axes helper (visualizes axes)
 const axesHelper = new THREE.AxesHelper(3);
 scene.add(axesHelper);
 
 const renderer = new THREE.WebGLRenderer({
-    canvas,
+    canvas: document.querySelector(".webgl"),
 });
-// limit pixel ratio to max of 2 (usually > 2 on mobile)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 renderer.setSize(sizes.width, sizes.height);
 
 const clock = new THREE.Clock();
 const tick = () => {
+    const elapsedTime = clock.getElapsedTime();
+
+    /*
+    // does a full rotation when moving cursor from left to right
+    camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 3;
+    // Z not Y
+    camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 3;
+
+    camera.position.y = cursor.y * 5;
+    */
+    // Threejs has builtin Controls classes (not part of Three, its in the
+    // examples folder)
+    // camera.lookAt(mesh.position);
+
+    // update controls (need to update controls() on each frame if damping)
     controls.update();
 
     renderer.render(scene, camera);
