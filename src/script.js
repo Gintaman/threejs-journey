@@ -3,6 +3,30 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import GUI from "lil-gui";
 import gsap from "gsap";
 
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onLoad = () => {
+    console.log("textures loaded");
+};
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = textureLoader.load(
+    "/textures/Door_Wood_001_basecolor.jpg"
+);
+const alphaTexture = textureLoader.load("/textures/Door_Wood_001_opacity.jpg");
+const heightTexture = textureLoader.load("/textures/Door_Wood_001_height.png");
+const normalTexture = textureLoader.load("/textures/Door_Wood_001_normal.jpg");
+const ambientOcclusionTexture = textureLoader.load(
+    "/textures/Door_Wood_001_ambientOcclusion.jpg"
+);
+const metalnessTexture = textureLoader.load(
+    "/textures/Door_Wood_001_metallic.jpg"
+);
+const roughnessTexture = textureLoader.load(
+    "/textures/Door_Wood_001_roughness.jpg"
+);
+
+// we can also use a LoadingManager to manage loading many textures
+// and firing an event once everything is loaded
+
 const gui = new GUI();
 const parameters = {
     color: 0xff0000,
@@ -31,8 +55,7 @@ const scene = new THREE.Scene();
 
 const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
 const material = new THREE.MeshBasicMaterial({
-    color: parameters.color,
-    wireframe: false,
+    map: colorTexture,
 });
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
